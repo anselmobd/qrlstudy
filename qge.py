@@ -17,7 +17,7 @@ class QGE():
 
     def __init__(self, epsilon_option, num_episodes, max_steps, environment=None):
         self.qtb_dir = 'qtb'
-        self.version = 't4'
+        self.version = 'qge1'
 
         self.epsilon_option = epsilon_option
         self.num_episodes = num_episodes
