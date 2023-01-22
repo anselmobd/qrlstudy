@@ -10,20 +10,21 @@ import time
 from pprint import pprint
 
 
-class QGTE():
-    """Q-Reinforcement Learning - Gym - Taxi-v3
+class QGE():
+    """Q-Reinforcement Learning - Gym
     Epsilon analysis
     """
 
-    def __init__(self, epsilon_option, num_episodes, max_steps):
+    def __init__(self, epsilon_option, num_episodes, max_steps, environment=None):
         self.qtb_dir = 'qtb'
         self.version = 't4'
 
         self.epsilon_option = epsilon_option
         self.num_episodes = num_episodes
         self.max_steps = max_steps
+        self.environment = "Taxi-v3" if environment is None else environment
 
-        print("Q-rl Gym Taxi-v3 Epsilon analysis")
+        print("Q-rl Gym Epsilon analysis")
         print("epsilon_option:", epsilon_option)
         print("num_episodes:", num_episodes)
         print("max_steps:", max_steps)
@@ -50,7 +51,7 @@ class QGTE():
         print("gamma:", gamma)
 
         self.env = gym.make(
-            "Taxi-v3",
+            self.environment,
             max_episode_steps=self.max_steps,
             render_mode=None,
         )
@@ -196,5 +197,5 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    q = QGTE(args.epsilon_option, args.num_episodes, args.max_steps)
+    q = QGE(args.epsilon_option, args.num_episodes, args.max_steps)
     q.train()
