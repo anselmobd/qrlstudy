@@ -33,6 +33,22 @@ class QGE():
         self._qtb_filename = None
 
     @property
+    def epsilon(self):
+        # explore X exploit
+        # 0.1 means
+        # - 10% probability of choosing an action at random
+        # - 90% of choosing the action with the best reward,
+        #   according to what is known so far
+        if self.epsilon_option == 'a':
+            return 0.1
+        elif self.epsilon_option == 'b':
+            return 0.9
+        elif self.epsilon_option == 'c':
+            return (np.count_nonzero(self.q_table == 0) / self.q_table_size) * 0.9 + 0.1
+        elif self.epsilon_option == 'd':
+            return 0.05 + (1 - 0.05) * math.e ** (-self.episode / 6000)
+
+    @property
     def output_filename(self):
         if not self._output_filename:
             self._output_filename = self.filename()
@@ -114,23 +130,7 @@ class QGE():
 
         print("  zeros:", np.count_nonzero(self.q_table==0))
 
-    def epsilon_value(self):
-        # explore X exploit
-        # 0.1 means
-        # - 10% probability of choosing an action at random
-        # - 90% of choosing the action with the best reward,
-        #   according to what is known so far
-        if self.epsilon_option == 'a':
-            return 0.1
-        elif self.epsilon_option == 'b':
-            return 0.9
-        elif self.epsilon_option == 'c':
-            return (np.count_nonzero(self.q_table == 0) / self.q_table_size) * 0.9 + 0.1
-        elif self.epsilon_option == 'd':
-            return 0.05 + (1 - 0.05) * math.e ** (-self.episode / 6000)
-
     def get_action(self, state):
-        self.epsilon = self.epsilon_value()
         if random.uniform(0, 1) < self.epsilon:
             return self.env.action_space.sample()  # Explore action space
         else:
