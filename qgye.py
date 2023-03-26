@@ -152,7 +152,7 @@ class QGE():
 
     def next_epoch(self):
         print(
-            "\r"
+            "\r  "
             f"episode {self.episode:6d}; "
             f"epoch {self.epoch:6d}; "
             f"dones {self.dones:6d}; "
@@ -187,12 +187,12 @@ class QGE():
     def train(self):
         self.setup()
 
-        print(f"- Running {self.num_episodes} episodes")
+        print(f"Training started - Running {self.num_episodes} episodes")
         self.dones = 0
         self.truncs = 0
         for self.episode in range(self.num_episodes):
             self.run_episode()
-        print("\n- Training finished")
+        print("\nTraining finished")
 
         self.save_qtable()
 
