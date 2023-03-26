@@ -173,19 +173,28 @@ class QGE():
         self.done = False
         self.truncated = False
 
-    def next_epoch(self):
-        self.prt(
-            "\r  "
+    def print_epoch(self):
+        mantem_print_anterior = (
+            self.verbose >= 3 or
+            (
+                self.verbose == 2 and
+                self.epoch == 0 and
+                self.episode != 0
+            )
+        )
+        controle = "\n" if mantem_print_anterior else "\r"
+        informacao = (
             f"episode {self.episode:6d}; "
             f"epoch {self.epoch:6d}; "
             f"dones {self.dones:6d}; "
             f"truncs {self.truncs:6d}; "
             f"zeros in q_table {np.count_nonzero(self.q_table==0):6d}; "
-            ,
-            end=''
         )
-        self.epoch += 1
-        # time.sleep(0.0005)
+        self.prt(f"{controle}  {informacao}", end='')
+
+    def end_print_epoch(self):
+        if self.episode == (self.num_episodes - 1):
+            self.prt()
 
     def run_episode(self):
         state, info = self.env.reset()
@@ -201,7 +210,10 @@ class QGE():
             ) = self.env.step(action)
             self.update_qtable(state, action, reward, next_state)
             state = next_state
-            self.next_epoch()
+            self.print_epoch()
+            self.epoch += 1
+            # time.sleep(0.0005)
+        self.end_print_epoch()
 
     def save_qtable(self):
         self.prt("Save qtable to", self.qtb_filename)
@@ -215,7 +227,7 @@ class QGE():
         self.truncs = 0
         for self.episode in range(self.num_episodes):
             self.run_episode()
-        self.prt("\nTraining finished")
+        self.prt("Training finished")
 
         self.save_qtable()
 
