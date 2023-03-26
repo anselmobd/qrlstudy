@@ -6,9 +6,8 @@ import math
 import numpy as np
 import os
 import random
-import time
 from pprint import pprint
-  
+
 
 class QGE():
     """Q-Reinforcement Learning - Gymnasium
@@ -126,7 +125,7 @@ class QGE():
         self.alpha = 0.1 if alpha is None else alpha
         # 0.1 means
         # - 10% of the value learned in the step
-        # - 90% of the previous value   
+        # - 90% of the previous value
 
         # fator de desconto
         self.gamma = 0.6 if gamma is None else gamma
@@ -212,7 +211,6 @@ class QGE():
             state = next_state
             self.print_step()
             self.step += 1
-            # time.sleep(0.0005)
         self.end_print_step()
 
     def save_qtable(self):
