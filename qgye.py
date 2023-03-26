@@ -15,7 +15,7 @@ class QGE():
     Epsilon analysis
     """
 
-    def __init__(self, epsilon_option, num_episodes, max_steps, environment=None):
+    def __init__(self, *, epsilon_option, num_episodes, max_steps, environment=None):
         self.qtb_dir = 'qtb'
         self.version = 'qgye1'
 
@@ -244,5 +244,9 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    q = QGE(args.epsilon_option, args.num_episodes, args.max_steps)
+    q = QGE(
+        epsilon_option=args.epsilon_option,
+        num_episodes=args.num_episodes,
+        max_steps=args.max_steps,
+    )
     q.train()
