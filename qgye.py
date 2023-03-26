@@ -113,10 +113,15 @@ class QGE():
             elif truncated:
                 self.truncs += 1
             print(
-                f"\repisode {self.episode:6d}; epoch {epoch:6d}; "
-                f"dones {self.dones:6d}; truncs {self.truncs:6d}; "
+                "\r"
+                f"episode {self.episode:6d}; "
+                f"epoch {epoch:6d}; "
+                f"dones {self.dones:6d}; "
+                f"penalties {penalties:6d}; "
+                f"truncs {self.truncs:6d}; "
                 f"zeros in q_table {np.count_nonzero(self.q_table==0):6d}; "
-                , end=''
+                ,
+                end=''
             )
             # time.sleep(0.005)
 
