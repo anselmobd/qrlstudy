@@ -145,8 +145,12 @@ class QGE():
         )
         self.q_table[state, action] = new_value
 
+    def init_epochs(self):
+        self.epoch = 0
+        self.done = False
+        self.truncated = False
 
-    def print_epoch(self):
+    def next_epoch(self):
         print(
             "\r"
             f"episode {self.episode:6d}; "
@@ -158,13 +162,11 @@ class QGE():
             end=''
         )
         self.epoch += 1
+        # time.sleep(0.0005)
 
     def run_episode(self):
         state, info = self.env.reset()
-
-        self.epoch = 0
-        self.done = False
-        self.truncated = False
+        self.init_epochs()
         while not (self.done or self.truncated):
             action = self.get_action(state)
             (
@@ -176,8 +178,7 @@ class QGE():
             ) = self.env.step(action)
             self.update_qtable(state, action, reward, next_state)
             state = next_state
-            self.print_epoch()
-            # time.sleep(0.0005)
+            self.next_epoch()
 
     def save_qtable(self):
         print("Save qtable to", self.qtb_filename)
