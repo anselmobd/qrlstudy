@@ -11,7 +11,7 @@ from pprint import pprint
   
 
 class QGE():
-    """Q-Reinforcement Learning - Gym
+    """Q-Reinforcement Learning - Gymnasium
     Epsilon analysis
     """
 
@@ -24,11 +24,10 @@ class QGE():
         self.max_steps = max_steps
         self.environment = "Taxi-v3" if environment is None else environment
 
-        print("Q-rl Gym Epsilon analysis")
-        print("epsilon_option:", epsilon_option)
-        print("num_episodes:", num_episodes)
-        print("max_steps:", max_steps)
-        print()
+        print("Q-RL Gymnasium Epsilon analysis")
+        print("  epsilon_option:", epsilon_option)
+        print("  num_episodes:", num_episodes)
+        print("  max_steps:", max_steps)
 
     def setup(self, alpha=None, gamma=None):
 
@@ -47,24 +46,23 @@ class QGE():
         #   of the maximum reward from the next state onwards
 
         print("Initialize the environment")
-        print("alpha:", alpha)
-        print("gamma:", gamma)
+        print("  alpha:", alpha)
+        print("  gamma:", gamma)
 
         self.env = gym.make(
             self.environment,
             max_episode_steps=self.max_steps,
             render_mode=None,
         )
-        print("observation space:", self.env.observation_space.n)
-        print("action space:", self.env.action_space.n)
+        print("  observation space:", self.env.observation_space.n)
+        print("  action space:", self.env.action_space.n)
 
         self.q_table = np.zeros([self.env.observation_space.n, self.env.action_space.n])
 
         self.q_table_size = self.env.observation_space.n * self.env.action_space.n
-        print("q_table_size:", self.q_table_size)
+        print("  q_table_size:", self.q_table_size)
 
-        print("zeros:", np.count_nonzero(self.q_table==0))
-        print()
+        print("  zeros:", np.count_nonzero(self.q_table==0))
 
     def epsilon_value(self):
         # explore X exploit
@@ -139,22 +137,16 @@ class QGE():
         txt_filename = self.txt_filename()
         print("Save qtable to", txt_filename)
         np.savetxt(txt_filename, self.q_table)
-        print()
 
     def train(self):
         self.setup()
-
-        print(f"Running {self.num_episodes} episodes")
-
+        print(f"- Running {self.num_episodes} episodes")
         self.dones = 0
         self.truncs = 0
         for self.episode in range(self.num_episodes):
             self.run_episode()
-        print("\n")
-
+        print("\n- Training finished")
         self.save_qtable()
-
-        print("Training finished")
 
 
 def int_limits(start=None, end=None):
@@ -174,7 +166,7 @@ def int_limits(start=None, end=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Train Q-learning Reinforcement Learning",
+        description="Train Q-Reinforcement Learning",
         epilog="(c) Anselmo Blanco Dominguez",
         formatter_class=argparse.RawTextHelpFormatter,
     )
