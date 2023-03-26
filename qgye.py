@@ -21,7 +21,7 @@ class QGE():
             num_episodes,
             max_steps,
             quiet=False,
-            verbose=False,
+            verbose=0,
             environment=None):
         self.qtb_dir = 'qtb'
         self.version = 'qgye1'
@@ -91,14 +91,17 @@ class QGE():
 
     def level_print(self, level, *args, **kwargs):
         if not self.quiet:
-            if level == 1 or self.verbose:
+            if level <= self.verbose:
                 print(*args, **kwargs)
 
     def prt(self, *args, **kwargs):
-            self.level_print(1, *args, **kwargs)
+            self.level_print(0, *args, **kwargs)
 
     def prtv(self, *args, **kwargs):
-            self.level_print(2, *args, **kwargs)
+            self.level_print(1, *args, **kwargs)
+
+    def prtvv(self, verbose, *args, **kwargs):
+            self.level_print(verbose, *args, **kwargs)
 
     def filename(self):
         txt_dir = os.path.join(
@@ -247,7 +250,8 @@ def parse_args():
     group.add_argument(
         '-v',
         '--verbose',
-        action='store_true',
+        action='count',
+        default=0,
     )
     parser.add_argument(
         'epsilon_option',
