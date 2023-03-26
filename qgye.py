@@ -122,19 +122,21 @@ class QGE():
             )
             # time.sleep(0.005)
 
-    def save_qtable(self):
-
+    def txt_filename(self):
         txt_dir = os.path.join(
             self.qtb_dir,
             self.version,
         )
         if not os.path.isdir(txt_dir):
             os.makedirs(txt_dir)
-        txt_filename = os.path.join(
+        return os.path.join(
             txt_dir,
             f"{self.version}_{self.epsilon_option}"
             f"_{self.num_episodes}_{self.max_steps}.qtb"
         )
+
+    def save_qtable(self):
+        txt_filename = self.txt_filename()
         print("Save qtable to", txt_filename)
         np.savetxt(txt_filename, self.q_table)
         print()
