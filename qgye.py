@@ -29,6 +29,36 @@ class QGE():
         print("  num_episodes:", num_episodes)
         print("  max_steps:", max_steps)
 
+        self._output_filename = None
+        self._qtb_filename = None
+
+    @property
+    def output_filename(self):
+        if not self._output_filename:
+            self._output_filename = self.filename()
+        return self._output_filename
+
+    @property
+    def qtb_filename(self):
+        if not self._qtb_filename:
+            self._qtb_filename = f"{self.output_filename}.qtb"
+        return self._qtb_filename
+
+    def filename(self):
+        txt_dir = os.path.join(
+            self.qtb_dir,
+            self.version,
+        )
+        if not os.path.isdir(txt_dir):
+            os.makedirs(txt_dir)
+        txt_filename = '_'.join(map(str,[
+            self.version,
+            self.epsilon_option,
+            self.num_episodes,
+            self.max_steps,
+        ]))
+        return os.path.join(txt_dir, txt_filename)
+
     def setup(self, alpha=None, gamma=None):
 
         # Hyperparameters
@@ -122,23 +152,9 @@ class QGE():
             )
             # time.sleep(0.0005)
 
-    def txt_filename(self):
-        txt_dir = os.path.join(
-            self.qtb_dir,
-            self.version,
-        )
-        if not os.path.isdir(txt_dir):
-            os.makedirs(txt_dir)
-        return os.path.join(
-            txt_dir,
-            f"{self.version}_{self.epsilon_option}"
-            f"_{self.num_episodes}_{self.max_steps}.qtb"
-        )
-
     def save_qtable(self):
-        txt_filename = self.txt_filename()
-        print("Save qtable to", txt_filename)
-        np.savetxt(txt_filename, self.q_table)
+        print("Save qtable to", self.qtb_filename)
+        np.savetxt(self.qtb_filename, self.q_table)
 
     def train(self):
         self.setup()
