@@ -44,6 +44,26 @@ class QGE():
             self._qtb_filename = f"{self.output_filename}.qtb"
         return self._qtb_filename
 
+    @property
+    def done(self):
+        return self._done
+
+    @done.setter
+    def done(self, value):
+        self._done = value
+        if value:
+            self.dones += 1
+
+    @property
+    def truncated(self):
+        return self._truncated
+
+    @truncated.setter
+    def truncated(self, value):
+        self._truncated = value
+        if value:
+            self.truncs += 1
+
     def filename(self):
         txt_dir = os.path.join(
             self.qtb_dir,
@@ -128,24 +148,23 @@ class QGE():
 
     def run_episode(self):
         state, info = self.env.reset()
-        epoch, reward = 0, 0
 
-        done = False
-        truncated = False
-        while not (done or truncated):
+        epoch = 0
+        self.done = False
+        self.truncated = False
+        while not (self.done or self.truncated):
             action = self.get_action(state)
-
-            next_state, reward, done, truncated, info = self.env.step(action)
-
+            (
+                next_state,
+                reward,
+                self.done,
+                self.truncated,
+                info,
+            ) = self.env.step(action)
             self.update_qtable(state, action, reward, next_state)
-
             state = next_state
             epoch += 1
 
-            if done:
-                self.dones += 1
-            elif truncated:
-                self.truncs += 1
             print(
                 "\r"
                 f"episode {self.episode:6d}; "
