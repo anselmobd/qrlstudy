@@ -15,19 +15,28 @@ class QGE():
     Epsilon analysis
     """
 
-    def __init__(self, *, epsilon_option, num_episodes, max_steps, environment=None):
+    def __init__(
+            self, *,
+            epsilon_option,
+            num_episodes,
+            max_steps,
+            quiet=False,
+            verbose=False,
+            environment=None):
         self.qtb_dir = 'qtb'
         self.version = 'qgye1'
 
         self.epsilon_option = epsilon_option
         self.num_episodes = num_episodes
         self.max_steps = max_steps
+        self.quiet = quiet
+        self.verbose = verbose
         self.environment = "Taxi-v3" if environment is None else environment
 
-        print("Q-RL Gymnasium Epsilon analysis")
-        print("  epsilon_option:", epsilon_option)
-        print("  num_episodes:", num_episodes)
-        print("  max_steps:", max_steps)
+        self.prt("Q-RL Gymnasium Epsilon analysis")
+        self.prtv("  epsilon_option:", epsilon_option)
+        self.prtv("  num_episodes:", num_episodes)
+        self.prtv("  max_steps:", max_steps)
 
         self._output_filename = None
         self._qtb_filename = None
@@ -80,6 +89,17 @@ class QGE():
         if value:
             self.truncs += 1
 
+    def level_print(self, level, *args, **kwargs):
+        if not self.quiet:
+            if level == 1 or self.verbose:
+                print(*args, **kwargs)
+
+    def prt(self, *args, **kwargs):
+            self.level_print(1, *args, **kwargs)
+
+    def prtv(self, *args, **kwargs):
+            self.level_print(2, *args, **kwargs)
+
     def filename(self):
         txt_dir = os.path.join(
             self.qtb_dir,
@@ -111,24 +131,24 @@ class QGE():
         # - the reward for the current action is added to 60%
         #   of the maximum reward from the next state onwards
 
-        print("Initialize the environment")
-        print("  alpha:", alpha)
-        print("  gamma:", gamma)
+        self.prtv("Initialize the environment")
+        self.prtv("  alpha:", alpha)
+        self.prtv("  gamma:", gamma)
 
         self.env = gym.make(
             self.environment,
             max_episode_steps=self.max_steps,
             render_mode=None,
         )
-        print("  observation space:", self.env.observation_space.n)
-        print("  action space:", self.env.action_space.n)
+        self.prtv("  observation space:", self.env.observation_space.n)
+        self.prtv("  action space:", self.env.action_space.n)
 
         self.q_table = np.zeros([self.env.observation_space.n, self.env.action_space.n])
 
         self.q_table_size = self.env.observation_space.n * self.env.action_space.n
-        print("  q_table_size:", self.q_table_size)
+        self.prtv("  q_table_size:", self.q_table_size)
 
-        print("  zeros:", np.count_nonzero(self.q_table==0))
+        self.prtv("  zeros:", np.count_nonzero(self.q_table==0))
 
     def get_action(self, state):
         if random.uniform(0, 1) < self.epsilon:
@@ -151,7 +171,7 @@ class QGE():
         self.truncated = False
 
     def next_epoch(self):
-        print(
+        self.prt(
             "\r  "
             f"episode {self.episode:6d}; "
             f"epoch {self.epoch:6d}; "
@@ -181,18 +201,18 @@ class QGE():
             self.next_epoch()
 
     def save_qtable(self):
-        print("Save qtable to", self.qtb_filename)
+        self.prt("Save qtable to", self.qtb_filename)
         np.savetxt(self.qtb_filename, self.q_table)
 
     def train(self):
         self.setup()
 
-        print(f"Training started - Running {self.num_episodes} episodes")
+        self.prt(f"Training started - Running {self.num_episodes} episodes")
         self.dones = 0
         self.truncs = 0
         for self.episode in range(self.num_episodes):
             self.run_episode()
-        print("\nTraining finished")
+        self.prt("\nTraining finished")
 
         self.save_qtable()
 
@@ -218,16 +238,27 @@ def parse_args():
         epilog="(c) Anselmo Blanco Dominguez",
         formatter_class=argparse.RawTextHelpFormatter,
     )
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '-q',
+        '--quiet',
+        action='store_true',
+    )
+    group.add_argument(
+        '-v',
+        '--verbose',
+        action='store_true',
+    )
     parser.add_argument(
         'epsilon_option',
         help=(
-            "Epsilon hyperparameter use option\n"
+            "epsilon hyperparameter use option\n"
             "  a: epsilon=0.1\n"
             "  b: epsilon=0.9\n"
             "  c: epsilon=(zeros em q_table) / q_table size) * 0.9 + 0.1\n"
             "  d: epsilon=0.05 + (1 - 0.05) * e ** (-episode / 6000)\n"
         ),
-        choices=['a', 'b', 'c', 'd']
+        choices='abcd',
     )
     parser.add_argument(
         'num_episodes',
@@ -248,5 +279,7 @@ if __name__ == '__main__':
         epsilon_option=args.epsilon_option,
         num_episodes=args.num_episodes,
         max_steps=args.max_steps,
+        quiet=args.quiet,
+        verbose=args.verbose,
     )
     q.train()
