@@ -109,6 +109,23 @@ class QGE():
         elif self.epsilon_option == 'd':
             return 0.05 + (1 - 0.05) * math.e ** (-self.episode / 6000)
 
+    def get_action(self, state):
+        self.epsilon = self.epsilon_value()
+        if random.uniform(0, 1) < self.epsilon:
+            return self.env.action_space.sample()  # Explore action space
+        else:
+            return np.argmax(self.q_table[state])  # Exploit learned values
+
+    def update_qtable(self, state, action, reward, next_state):
+        old_value = self.q_table[state, action]
+        next_max = np.max(self.q_table[next_state])
+        new_value = (
+            (1 - self.alpha) * old_value +
+            self.alpha * (reward + self.gamma * next_max)
+        )
+        self.q_table[state, action] = new_value
+
+
     def run_episode(self):
         state, info = self.env.reset()
         epoch, reward = 0, 0
@@ -116,22 +133,11 @@ class QGE():
         done = False
         truncated = False
         while not (done or truncated):
-            self.epsilon = self.epsilon_value()
-
-            if random.uniform(0, 1) < self.epsilon:
-                action = self.env.action_space.sample()  # Explore action space
-            else:
-                action = np.argmax(self.q_table[state])  # Exploit learned values
+            action = self.get_action(state)
 
             next_state, reward, done, truncated, info = self.env.step(action)
 
-            old_value = self.q_table[state, action]
-            next_max = np.max(self.q_table[next_state])
-            new_value = (
-                (1 - self.alpha) * old_value +
-                self.alpha * (reward + self.gamma * next_max)
-            )
-            self.q_table[state, action] = new_value
+            self.update_qtable(state, action, reward, next_state)
 
             state = next_state
             epoch += 1
@@ -158,12 +164,14 @@ class QGE():
 
     def train(self):
         self.setup()
+
         print(f"- Running {self.num_episodes} episodes")
         self.dones = 0
         self.truncs = 0
         for self.episode in range(self.num_episodes):
             self.run_episode()
         print("\n- Training finished")
+
         self.save_qtable()
 
 
