@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import csv
 import gymnasium as gym
 import math
 import numpy as np
@@ -9,8 +10,23 @@ import random
 from pprint import pprint
 
 
+class CSVWriter():
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.fp = open(self.filename, 'w', encoding='utf8')
+        self.writer = csv.writer(self.fp, delimiter=';', quotechar='"', quoting=csv.QUOTE_ALL, lineterminator='\n')
+
+    def close(self):
+        self.fp.close()
+
+    def write(self, *data):
+        self.writer.writerow(data)
+
+
 class QGE():
-    """Q-Reinforcement Learning - Gymnasium
+    """Q-Reinforcement Learning
+    Gymnasium
     Epsilon analysis
     """
 
@@ -39,6 +55,7 @@ class QGE():
 
         self._output_filename = None
         self._qtb_filename = None
+        self._csv_filename = None
 
     @property
     def epsilon(self):
@@ -67,6 +84,12 @@ class QGE():
         if not self._qtb_filename:
             self._qtb_filename = f"{self.output_filename}.qtb"
         return self._qtb_filename
+
+    @property
+    def csv_filename(self):
+        if not self._csv_filename:
+            self._csv_filename = f"{self.output_filename}.csv"
+        return self._csv_filename
 
     @property
     def done(self):
@@ -211,6 +234,12 @@ class QGE():
             state = next_state
             self.print_step()
             self.step += 1
+        self.train_data.write(
+            self.episode,
+            self.dones,
+            self.truncs,
+            np.count_nonzero(self.q_table==0),
+        )
         self.end_print_step()
 
     def save_qtable(self):
@@ -223,8 +252,10 @@ class QGE():
         self.prt(f"Training started - Running {self.num_episodes} episodes")
         self.dones = 0
         self.truncs = 0
+        self.train_data = CSVWriter(self.csv_filename)
         for self.episode in range(self.num_episodes):
             self.run_episode()
+        self.train_data.close()
         self.prt("Training finished")
 
         self.save_qtable()
