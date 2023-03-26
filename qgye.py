@@ -81,7 +81,7 @@ class QGE():
 
     def run_episode(self):
         state, info = self.env.reset()
-        epoch, penalties, reward = 0, 0, 0
+        epoch, reward = 0, 0
 
         done = False
         truncated = False
@@ -106,8 +106,6 @@ class QGE():
             state = next_state
             epoch += 1
 
-            if reward == -10:
-                penalties += 1
             if done:
                 self.dones += 1
             elif truncated:
@@ -117,13 +115,12 @@ class QGE():
                 f"episode {self.episode:6d}; "
                 f"epoch {epoch:6d}; "
                 f"dones {self.dones:6d}; "
-                f"penalties {penalties:6d}; "
                 f"truncs {self.truncs:6d}; "
                 f"zeros in q_table {np.count_nonzero(self.q_table==0):6d}; "
                 ,
                 end=''
             )
-            # time.sleep(0.005)
+            # time.sleep(0.0005)
 
     def txt_filename(self):
         txt_dir = os.path.join(
