@@ -253,6 +253,8 @@ class QGE():
         self.dones = 0
         self.truncs = 0
         self.train_data = CSVWriter(self.csv_filename)
+        self.train_data.write(
+            'episode', 'dones', 'truncs', 'q_table_zeros')
         for self.episode in range(self.num_episodes):
             self.run_episode()
         self.train_data.close()
