@@ -37,7 +37,9 @@ class QGE():
             max_steps,
             quiet=False,
             verbose=0,
-            environment=None):
+            environment=None,
+            qtable_saves=[],
+        ):
         self.qtb_dir = 'qtb'
         self.version = 'qgye1'
 
@@ -47,6 +49,7 @@ class QGE():
         self.quiet = quiet
         self.verbose = verbose
         self.environment = "Taxi-v3" if environment is None else environment
+        self.qtable_saves = qtable_saves
 
         self.prt("Q-RL Gymnasium Epsilon analysis")
         self.prtv("  epsilon_option:", epsilon_option)
@@ -242,9 +245,11 @@ class QGE():
         )
         self.end_print_step()
 
-    def save_qtable(self):
-        self.prt("Save qtable to", self.qtb_filename)
-        np.savetxt(self.qtb_filename, self.q_table)
+    def save_qtable(self, extra_save=None):
+        extra_save = f"-{extra_save}" if extra_save else ''
+        filename = f"{self.output_filename}{extra_save}.qtb"
+        self.prt("Save qtable to", filename)
+        np.savetxt(filename, self.q_table)
 
     def train(self):
         self.setup()
@@ -257,6 +262,8 @@ class QGE():
             'episode', 'dones', 'truncs', 'q_table_zeros')
         for self.episode in range(self.num_episodes):
             self.run_episode()
+            if (self.episode+1) in self.qtable_saves:
+                self.save_qtable(self.episode+1)
         self.train_data.close()
         self.prt("Training finished")
 
@@ -276,6 +283,11 @@ def int_limits(start=None, end=None):
             raise argparse.ArgumentTypeError("Integer out of bounds")
         return value
     return convert_verify
+
+
+class SplitIntArg(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, list(map(int, values.split(','))))
 
 
 def parse_args():
@@ -302,7 +314,7 @@ def parse_args():
             "epsilon hyperparameter use option\n"
             "  a: epsilon=0.1\n"
             "  b: epsilon=0.9\n"
-            "  c: epsilon=(zeros em q_table) / q_table size) * 0.9 + 0.1\n"
+            "  c: epsilon=(zeros em q_table / q_table size) * 0.9 + 0.1\n"
             "  d: epsilon=0.05 + (1 - 0.05) * e ** (-episode / 6000)\n"
         ),
         choices='abcd',
@@ -317,6 +329,13 @@ def parse_args():
         help="maximum steps per episode [1, 10^6]",
         type=int_limits(start=1, end=10**6),
     )
+    parser.add_argument(
+        '-s',
+        '--qtable_saves',
+        help="comma separated list of episode number when q-table is also saved",
+        default=[],
+        action=SplitIntArg,
+    )
     return parser.parse_args()
 
 
@@ -328,5 +347,6 @@ if __name__ == '__main__':
         max_steps=args.max_steps,
         quiet=args.quiet,
         verbose=args.verbose,
+        qtable_saves=args.qtable_saves,
     )
     q.train()
