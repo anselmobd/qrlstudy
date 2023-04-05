@@ -263,6 +263,7 @@ class QGE():
         for self.episode in range(self.num_episodes):
             self.run_episode()
             if (self.episode+1) in self.qtable_saves:
+                self.prt("")
                 self.save_qtable(self.episode+1)
         self.train_data.close()
         self.prt("Training finished")
