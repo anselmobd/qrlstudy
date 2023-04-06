@@ -39,6 +39,7 @@ class QGE():
             verbose=0,
             environment=None,
             qtable_saves=[],
+            qtable_interval=0,
         ):
         self.qtb_dir = 'qtb'
         self.version = 'qgye1'
@@ -50,6 +51,7 @@ class QGE():
         self.verbose = verbose
         self.environment = "Taxi-v3" if environment is None else environment
         self.qtable_saves = qtable_saves
+        self.qtable_interval = qtable_interval
 
         self.prt("Q-RL Gymnasium Epsilon analysis")
         self.prtv("  epsilon_option:", epsilon_option)
@@ -246,10 +248,20 @@ class QGE():
         self.end_print_step()
 
     def save_qtable(self, extra_save=None):
-        extra_save = f"-{extra_save}" if extra_save else ''
+        if extra_save:
+            extra_save = f"-{extra_save}"
+            self.prt("")
+        else:
+            extra_save = ''
         filename = f"{self.output_filename}{extra_save}.qtb"
         self.prt("Save qtable to", filename)
         np.savetxt(filename, self.q_table)
+
+    def extra_save_qtable(self, episode_number):
+        if self.qtable_interval and episode_number % self.qtable_interval == 0:
+            self.save_qtable(episode_number)
+        if episode_number in self.qtable_saves:
+            self.save_qtable(episode_number)
 
     def train(self):
         self.setup()
@@ -262,9 +274,7 @@ class QGE():
             'episode', 'dones', 'truncs', 'q_table_zeros')
         for self.episode in range(self.num_episodes):
             self.run_episode()
-            if (self.episode+1) in self.qtable_saves:
-                self.prt("")
-                self.save_qtable(self.episode+1)
+            self.extra_save_qtable(self.episode+1)
         self.train_data.close()
         self.prt("Training finished")
 
@@ -337,6 +347,13 @@ def parse_args():
         default=[],
         action=SplitIntArg,
     )
+    parser.add_argument(
+        '-i',
+        '--qtable_interval',
+        help="q-table periodic save interval [1, 10^6]",
+        default=0,
+        type=int_limits(start=1, end=10**6),
+    )
     return parser.parse_args()
 
 
@@ -349,5 +366,6 @@ if __name__ == '__main__':
         quiet=args.quiet,
         verbose=args.verbose,
         qtable_saves=args.qtable_saves,
+        qtable_interval=args.qtable_interval,
     )
     q.train()
