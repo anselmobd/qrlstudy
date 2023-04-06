@@ -206,7 +206,7 @@ class QGE():
             (
                 self.verbose == 2 and
                 self.step == 0 and
-                self.episode != 0
+                self.episode != 1
             )
         )
         controle = "\n" if mantem_print_anterior else "\r"
@@ -220,7 +220,7 @@ class QGE():
         self.prt(f"{controle}  {informacao}", end='')
 
     def end_print_step(self):
-        if self.episode == (self.num_episodes - 1):
+        if self.episode == self.num_episodes:
             self.prt()
 
     def run_episode(self):
@@ -272,9 +272,9 @@ class QGE():
         self.train_data = CSVWriter(self.csv_filename)
         self.train_data.write(
             'episode', 'dones', 'truncs', 'q_table_zeros')
-        for self.episode in range(self.num_episodes):
+        for self.episode in range(1, self.num_episodes+1):
             self.run_episode()
-            self.extra_save_qtable(self.episode+1)
+            self.extra_save_qtable(self.episode)
         self.train_data.close()
         self.prt("Training finished")
 
