@@ -77,6 +77,10 @@ class QGE():
             return (np.count_nonzero(self.q_table == 0) / self.q_table_size) * 0.9 + 0.1
         elif self.epsilon_option == 'd':
             return 0.05 + (1 - 0.05) * math.e ** (-self.episode / 6000)
+        elif self.epsilon_option == 'e':
+            return max(0.1, 0.9 * (0.1/0.9) ** (self.episode / 6000))
+        elif self.epsilon_option == 'f':
+            return max(0.1, 0.1 + (0.9-0.1) * ((2-2**(self.episode/6000))/(2-1)))
 
     @property
     def output_filename(self):
@@ -327,8 +331,12 @@ def parse_args():
             "  b: epsilon=0.9\n"
             "  c: epsilon=(zeros em q_table / q_table size) * 0.9 + 0.1\n"
             "  d: epsilon=0.05 + (1 - 0.05) * e ** (-episode / 6000)\n"
+            "  e: concave decay (falls off faster at the start)\n"
+            "     epsilon=max(0.1, 0.9*(0.1/0.9)^(episode/6000))\n"
+            "  f: convex decay (falls off faster at the end)\n"
+            "     epsilon=max(0.1, 0.1+(0.9-0.1)((2-2^(episode/6000))/(2-1))\n"
         ),
-        choices='abcd',
+        choices='abcdef',
     )
     parser.add_argument(
         'num_episodes',
