@@ -218,6 +218,7 @@ class QGE():
         controle = "\n" if mantem_print_anterior else "\r"
         informacao = (
             f"episode {self.episode:6d}; "
+            f"epsilon {self.epsilon:6.4f}; "
             f"step {self.step:6d}; "
             f"dones {self.dones:6d}; "
             f"truncs {self.truncs:6d}; "
@@ -247,6 +248,7 @@ class QGE():
             self.step += 1
         self.train_data.write(
             self.episode,
+            self.epsilon,
             self.dones,
             self.truncs,
             np.count_nonzero(self.q_table==0),
@@ -277,7 +279,7 @@ class QGE():
         self.truncs = 0
         self.train_data = CSVWriter(self.csv_filename)
         self.train_data.write(
-            'episode', 'dones', 'truncs', 'q_table_zeros')
+            'episode', 'epsilon', 'dones', 'truncs', 'q_table_zeros')
         for self.episode in range(1, self.num_episodes+1):
             self.run_episode()
             self.extra_save_qtable(self.episode)
