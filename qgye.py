@@ -78,8 +78,8 @@ class QGE():
         elif self.epsilon_option == 'd':
             return 0.05 + (1 - 0.05) * math.e ** (-self.episode / 6000)
         elif self.epsilon_option == 'e':
-            rate = 30/10
-            return max(0.1, 0.9 * (0.1/0.9) ** (rate * self.episode / 6000))
+            rate = 12/10
+            return max(0.1, 0.9 * (0.1/0.9) ** (self.episode ** rate / 6000 ** rate))
         elif self.epsilon_option == 'f':
             rate = 12/10
             return max(0.1, 0.1 + (0.9-0.1) * (((2**rate)-2**(rate*self.episode/6000))/((2**rate)-1)))
@@ -334,8 +334,8 @@ def parse_args():
             "  c: epsilon=(zeros em q_table / q_table size) * 0.9 + 0.1\n"
             "  d: epsilon=0.05 + (1 - 0.05) * e ** (-episode / 6000)\n"
             "  e: concave decay (falls off faster at the start)\n"
-            "     epsilon=max(0.1, 0.9*(0.1/0.9)^(rate*episode/6000))\n"
-            "     default rate 30 (/10)\n"
+            "     epsilon=max(0.1, 0.9*(0.1/0.9)^(episode^rate/6000^rate))\n"
+            "     default rate 12 (/10)\n"
             "  f: convex decay (falls off faster at the end)\n"
             "     epsilon=max(0.1, 0.1+(0.9-0.1)((2**rate-2^(rate*episode/6000))/(2**rate-1))\n"
             "     default rate 12 (/10)\n"
