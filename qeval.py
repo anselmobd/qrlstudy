@@ -35,38 +35,28 @@ class QQE():
 
     def eval(self):
         self.setup()
-        self.total_steps = 0
-        self.total_penalties = 0
-        self.total_truncates = 0
-        self.total_dones = 0
+        self.dones_steps = 0
+        self.truncates = 0
+        self.dones = 0
         for self.episode in range(self.num_episodes):
             state, info = self.env.reset()
-            steps, penalties, reward = 0, 0, 0
+            steps = 0
             done = truncated = False
-            state_action = []
             while not (done or truncated):
                 action = np.argmax(self.qtable[state])
-                state_action.append((state, action))
                 state, reward, done, truncated, info = self.env.step(action)
-
-                if reward <= -10:
-                    penalties += 1
-                if done:
-                    self.total_dones += 1
-                if truncated:
-                    # pprint(state_action)
-                    self.total_truncates += 1
                 steps += 1
             if done:
-                self.total_penalties += penalties
-                self.total_steps += steps
-            print(f"\b\b\b\b\b\b{self.episode+1:6d}", end='')
+                self.dones += 1
+                self.dones_steps += steps
+            else:
+                self.truncates += 1
+            print(f"\r{self.episode+1:6d}", end='')
 
         print()
-        print(f"Doned: {self.total_dones}; Truncated: {self.total_truncates}")
-        if self.total_dones != 0:
-            print(f"Average timesteps per doned episode: {self.total_steps / self.total_dones}")
-            print(f"Average penalties per doned episode: {self.total_penalties / self.total_dones}")
+        print(f"Done: {self.dones}; Truncated: {self.truncates}")
+        if self.dones != 0:
+            print(f"Average timesteps per doned episode: {self.dones_steps / self.dones}")
 
 
 def int_limits(start=None, end=None):
