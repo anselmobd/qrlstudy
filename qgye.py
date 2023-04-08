@@ -255,21 +255,22 @@ class QGE():
         )
         self.end_print_step()
 
-    def save_qtable(self, extra_save=None):
-        if extra_save:
-            extra_save = f"-{extra_save}"
+    def save_qtable(self, save_episode=None):
+        if save_episode:
+            self.last_saved_episode = save_episode
+            save_episode = f"-{save_episode}"
             self.prt("")
         else:
-            extra_save = ''
-        filename = f"{self.output_filename}{extra_save}.qtb"
+            save_episode = ''
+        filename = f"{self.output_filename}{save_episode}.qtb"
         self.prt("Save qtable to", filename)
         np.savetxt(filename, self.q_table)
 
-    def extra_save_qtable(self, episode_number):
-        if self.qtable_interval and episode_number % self.qtable_interval == 0:
-            self.save_qtable(episode_number)
-        if episode_number in self.qtable_saves:
-            self.save_qtable(episode_number)
+    def extra_save_qtable(self, save_episode):
+        if self.qtable_interval and save_episode % self.qtable_interval == 0:
+            self.save_qtable(save_episode)
+        if save_episode in self.qtable_saves:
+            self.save_qtable(save_episode)
 
     def train(self):
         self.setup()
@@ -280,13 +281,15 @@ class QGE():
         self.train_data = CSVWriter(self.csv_filename)
         self.train_data.write(
             'episode', 'epsilon', 'dones', 'truncs', 'q_table_zeros')
+        self.last_saved_episode = 0
         for self.episode in range(1, self.num_episodes+1):
             self.run_episode()
             self.extra_save_qtable(self.episode)
         self.train_data.close()
         self.prt("Training finished")
 
-        self.save_qtable()
+        if self.episode != self.last_saved_episode:
+            self.save_qtable()
 
 
 def int_limits(start=None, end=None):
