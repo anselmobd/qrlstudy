@@ -15,15 +15,18 @@ class QQE():
 
     def __init__(
             self, *,
+            quiet,
             qtable_file,
             states_cover,
             max_steps=None,
             environment=None,
         ):
+        self.quiet = quiet
         self.qtable_file = qtable_file
         self.states_cover = states_cover
-        self.environment = environment if environment else "Taxi-v3"
         self.max_steps = max_steps if max_steps else 100
+
+        self.environment = environment if environment else "Taxi-v3"
 
         if self.environment == "Taxi-v3":
             self.n_possible_states = 300
@@ -48,7 +51,8 @@ class QQE():
         state_set = set()
         self.episode = 0
         can_find_state = True
-        print("Epsodes:")
+        if not self.quiet:
+            print("Epsodes:")
         while len(state_set) < self.n_states:
 
             state_tries = 0
@@ -76,14 +80,23 @@ class QQE():
                 self.dones_steps += steps
             else:
                 self.truncates += 1
-            print(f"\r{self.episode+1:6d}", end='')
+            if not self.quiet:
+                print(f"\r{self.episode+1:6d}", end='')
             self.episode += 1
 
-        print()
-        print(f"Done: {self.dones}; Truncated: {self.truncates}")
+        self.percent_dones = self.dones / self.episode * 100
+        self.avg_steps = self.dones_steps / self.dones
+        if not self.quiet:
+            print()
+            print(f"Done: {self.percent_dones:.2f} {self.dones}; Truncated: {self.truncates}")
         if self.dones != 0:
-            print(f"Average timesteps per doned episode: {self.dones_steps / self.dones}")
-
+            if self.quiet:
+                print(f"{self.qtable_file} {self.percent_dones:.2f} {self.avg_steps:.6f}")
+            else:
+                print(f"Average timesteps per doned episode: {self.avg_steps:.6f}")
+        else:
+            if self.quiet:
+                print(f"{self.qtable_file} 0 999")
 
 def int_limits(start=None, end=None):
     """Return type function to use in argparse parser.add_argument
@@ -106,6 +119,11 @@ def parse_args():
         epilog="(c) Anselmo Blanco Dominguez",
     )
     parser.add_argument(
+        '-q',
+        '--quiet',
+        action='store_true',
+    )
+    parser.add_argument(
         'qtable',
         help="file with saved Q-table",
     )
@@ -125,6 +143,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     qqe = QQE(
+        quiet=args.quiet,
         qtable_file=args.qtable,
         max_steps=args.max_steps,
         states_cover=args.states_cover,
