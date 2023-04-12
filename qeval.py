@@ -16,14 +16,21 @@ class QQE():
     def __init__(
             self, *,
             qtable_file,
-            num_episodes,
+            states_cover,
             max_steps=None,
             environment=None,
         ):
         self.qtable_file = qtable_file
-        self.num_episodes = num_episodes
+        self.states_cover = states_cover
         self.environment = environment if environment else "Taxi-v3"
         self.max_steps = max_steps if max_steps else 100
+
+        if self.environment == "Taxi-v3":
+            self.n_possible_states = 300
+        else:
+            self.n_possible_states = 1_000
+        self.n_states = int(self.n_possible_states * self.states_cover / 100)
+        self.state_tries_limit = self.n_possible_states * 100
 
     def setup(self):
         self.qtable = np.loadtxt(self.qtable_file)
@@ -38,8 +45,26 @@ class QQE():
         self.dones_steps = 0
         self.truncates = 0
         self.dones = 0
-        for self.episode in range(self.num_episodes):
-            state, info = self.env.reset()
+        state_set = set()
+        self.episode = 0
+        can_find_state = True
+        print("Epsodes:")
+        while len(state_set) < self.n_states:
+
+            state_tries = 0
+            while True:
+                state, info = self.env.reset()
+                if state in state_set:
+                    state_tries += 1
+                    if state_tries > self.state_tries_limit:
+                        can_find_state = False
+                        break
+                    continue
+                state_set.add(state)
+                break
+            if not can_find_state:
+                break
+
             steps = 0
             done = truncated = False
             while not (done or truncated):
@@ -52,6 +77,7 @@ class QQE():
             else:
                 self.truncates += 1
             print(f"\r{self.episode+1:6d}", end='')
+            self.episode += 1
 
         print()
         print(f"Done: {self.dones}; Truncated: {self.truncates}")
@@ -84,9 +110,14 @@ def parse_args():
         help="file with saved Q-table",
     )
     parser.add_argument(
-        'num_episodes',
-        help="number of episodes [1, 10^9]",
-        type=int_limits(start=1, end=10**9),
+        'states_cover',
+        help="percentage of states covered [1, 100]",
+        type=int_limits(start=1, end=100),
+    )
+    parser.add_argument(
+        'max_steps',
+        help="maximum steps per episode [1, 10^6]",
+        type=int_limits(start=1, end=10**6),
     )
     return parser.parse_args()
 
@@ -95,6 +126,7 @@ if __name__ == '__main__':
     args = parse_args()
     qqe = QQE(
         qtable_file=args.qtable,
-        num_episodes=args.num_episodes,
+        max_steps=args.max_steps,
+        states_cover=args.states_cover,
     )
     qqe.eval()
