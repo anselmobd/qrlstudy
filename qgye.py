@@ -73,6 +73,8 @@ class QGE():
             return 0.1
         elif self.epsilon_option == 'b':
             return 0.9
+        elif self.epsilon_option == 'g':
+            return 0.99
         elif self.epsilon_option == 'c':
             return (np.count_nonzero(self.q_table == 0) / self.q_table_size) * 0.9 + 0.1
         elif self.epsilon_option == 'd':
@@ -344,8 +346,9 @@ def parse_args():
             "  f: convex decay (falls off faster at the end)\n"
             "     epsilon=max(0.1, 0.1+(0.9-0.1)((2**rate-2^(rate*episode/6000))/(2**rate-1))\n"
             "     default rate 12 (/10)\n"
+            "  g: epsilon=0.99\n"
         ),
-        choices='abcdef',
+        choices='abcdefg',
     )
     parser.add_argument(
         'num_episodes',
