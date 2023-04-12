@@ -3,7 +3,7 @@
 import argparse
 import gymnasium as gym
 import numpy as np
-import sys
+import re
 from pprint import pprint
 
 
@@ -86,17 +86,18 @@ class QQE():
 
         self.percent_dones = self.dones / self.episode * 100
         self.avg_steps = self.dones_steps / self.dones
+        epsilon_type, train_epsodes = re.findall('qgye1_([^_]+)_\d+_\d+-(\d+).qtb', args.qtable)[0]
         if not self.quiet:
             print()
             print(f"Done: {self.percent_dones:.2f} {self.dones}; Truncated: {self.truncates}")
         if self.dones != 0:
             if self.quiet:
-                print(f"{self.qtable_file} {self.percent_dones:.2f} {self.avg_steps:.6f}")
+                print(f'"{epsilon_type}";{train_epsodes};{self.percent_dones:.2f};{self.avg_steps:.6f}')
             else:
                 print(f"Average timesteps per doned episode: {self.avg_steps:.6f}")
         else:
             if self.quiet:
-                print(f"{self.qtable_file} 0 999")
+                print(f'"{epsilon_type}";{train_epsodes};0;0')
 
 def int_limits(start=None, end=None):
     """Return type function to use in argparse parser.add_argument
