@@ -38,7 +38,7 @@ class QQE():
     def setup(self):
         self.qtable = np.loadtxt(self.qtable_file)
         self.env = gym.make(
-            self.environment,
+            id=self.environment,
             max_episode_steps=self.max_steps,
             render_mode=None,
         )
@@ -52,7 +52,8 @@ class QQE():
         self.episode = 0
         can_find_state = True
         if not self.quiet:
-            print("Epsodes:")
+            print("Epsodes - (total_state_tries):")
+        total_state_tries = 0
         while len(state_set) < self.n_states:
 
             state_tries = 0
@@ -60,6 +61,7 @@ class QQE():
                 state, info = self.env.reset()
                 if state in state_set:
                     state_tries += 1
+                    total_state_tries +=1
                     if state_tries > self.state_tries_limit:
                         can_find_state = False
                         break
@@ -81,7 +83,7 @@ class QQE():
             else:
                 self.truncates += 1
             if not self.quiet:
-                print(f"\r{self.episode+1:6d}", end='')
+                print(f"\r{self.episode+1:6d} - ({total_state_tries:9d})", end='')
             self.episode += 1
 
         self.percent_dones = self.dones / self.episode * 100
