@@ -66,6 +66,7 @@ class QGE():
         self._csv_filename = None
 
         self.episode = 0
+        self.step = 0
         self.dones = 0
         self.truncs = 0
 
@@ -242,13 +243,14 @@ class QGE():
     def csv_header(self):
         self.train_data = CSVWriter(self.csv_filename)
         self.train_data.write(
-            'episode', 'epsilon', 'dones', 'truncs', 'q_table_zeros')
-        self.csv_write(0, 0, 0, 0)
+            'episode', 'epsilon', 'steps', 'dones', 'truncs', 'q_table_zeros')
+        self.csv_write(0, 0, 0, 0, 0)
 
     def csv_write(
         self,
         episode=None,
         epsilon=None,
+        step=None,
         dones=None,
         truncs=None,
         q_table=None,
@@ -258,6 +260,7 @@ class QGE():
         self.train_data.write(
             self.episode if episode is None else episode,
             self.epsilon if epsilon is None else epsilon,
+            self.step if step is None else step,
             self.dones if dones is None else dones,
             self.truncs if truncs is None else truncs,
             np.count_nonzero(q_table==0),
