@@ -18,7 +18,7 @@ class CSVWriter():
     def __init__(self, filename):
         self.filename = filename
         self.fp = open(self.filename, 'w', encoding='utf8')
-        self.writer = csv.writer(self.fp, delimiter=';', quotechar='"', quoting=csv.QUOTE_ALL, lineterminator='\n')
+        self.writer = csv.writer(self.fp, delimiter=';', quotechar='"', quoting=csv.QUOTE_NONNUMERIC, lineterminator='\n')
 
     def close(self):
         self.fp.close()
@@ -64,6 +64,10 @@ class QGE():
         self._output_filename = None
         self._qtb_filename = None
         self._csv_filename = None
+
+        self.episode = 0
+        self.dones = 0
+        self.truncs = 0
 
     @property
     def epsilon(self):
@@ -235,6 +239,30 @@ class QGE():
         if self.episode == self.num_episodes:
             self.prt()
 
+    def csv_header(self):
+        self.train_data = CSVWriter(self.csv_filename)
+        self.train_data.write(
+            'episode', 'epsilon', 'dones', 'truncs', 'q_table_zeros')
+        self.csv_write(0, 0, 0, 0)
+
+    def csv_write(
+        self,
+        episode=None,
+        epsilon=None,
+        dones=None,
+        truncs=None,
+        q_table=None,
+    ):
+        if q_table is None:
+            q_table = self.q_table
+        self.train_data.write(
+            episode if episode is None else self.episode,
+            epsilon if epsilon is None else self.epsilon,
+            dones if dones is None else self.dones,
+            truncs if truncs is None else self.truncs,
+            np.count_nonzero(q_table==0),
+        )
+
     def run_episode(self):
         state, info = self.env.reset()
         self.init_steps()
@@ -251,13 +279,7 @@ class QGE():
             state = next_state
             self.print_step()
             self.step += 1
-        self.train_data.write(
-            self.episode,
-            self.epsilon,
-            self.dones,
-            self.truncs,
-            np.count_nonzero(self.q_table==0),
-        )
+        self.csv_write()
         self.end_print_step()
 
     def save_qtable(self, save_episode=None):
@@ -279,13 +301,11 @@ class QGE():
 
     def train(self):
         self.setup()
+        self.csv_header()
 
         self.prt(f"Training started - Running {self.num_episodes} episodes")
         self.dones = 0
         self.truncs = 0
-        self.train_data = CSVWriter(self.csv_filename)
-        self.train_data.write(
-            'episode', 'epsilon', 'dones', 'truncs', 'q_table_zeros')
         self.last_saved_episode = 0
         for self.episode in range(1, self.num_episodes+1):
             self.run_episode()
