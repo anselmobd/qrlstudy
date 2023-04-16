@@ -10,6 +10,9 @@ import random
 from pprint import pprint
 
 
+_VERSION = 2
+
+
 class CSVWriter():
 
     def __init__(self, filename):
@@ -42,7 +45,7 @@ class QGE():
             qtable_interval=0,
         ):
         self.qtb_dir = 'qtb'
-        self.version = 'qgye1'
+        self.version = f'qgye{_VERSION}'
 
         self.epsilon_option = epsilon_option
         self.num_episodes = num_episodes
@@ -316,7 +319,7 @@ class SplitIntArg(argparse.Action):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Train Q-Reinforcement Learning",
+        description=f"Train Q-Reinforcement Learning - v.{_VERSION}",
         epilog="(c) Anselmo Blanco Dominguez",
         formatter_class=argparse.RawTextHelpFormatter,
     )
