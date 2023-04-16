@@ -256,10 +256,10 @@ class QGE():
         if q_table is None:
             q_table = self.q_table
         self.train_data.write(
-            episode if episode is None else self.episode,
-            epsilon if epsilon is None else self.epsilon,
-            dones if dones is None else self.dones,
-            truncs if truncs is None else self.truncs,
+            self.episode if episode is None else episode,
+            self.epsilon if epsilon is None else epsilon,
+            self.dones if dones is None else dones,
+            self.truncs if truncs is None else truncs,
             np.count_nonzero(q_table==0),
         )
 
