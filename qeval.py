@@ -7,6 +7,9 @@ import re
 from pprint import pprint
 
 
+_VERSION = 2
+
+
 class QQE():
     """Q-Reinforcement Learning
     Q-table
@@ -118,7 +121,7 @@ def int_limits(start=None, end=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Eval Q-Reinforcement Learning Q-table",
+        description=f"Eval Q-Reinforcement Learning Q-table - v.{_VERSION}",
         epilog="(c) Anselmo Blanco Dominguez",
     )
     parser.add_argument(
