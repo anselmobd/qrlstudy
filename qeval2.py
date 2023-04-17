@@ -97,19 +97,20 @@ class QQE():
             self.avg_steps = self.dones_steps / self.dones
         else:
             self.avg_steps = 0
-        epsilon_type, train_epsodes = re.findall(
-            f'qgye{_VERSION}_([^_]+)_\d+_\d+-(\d+).qtb', self.qtable_file)[0]
+        epsilon_type, num_episodes, max_steps, train_episodes = re.findall(
+            f'qgye{_VERSION}_([^_]+)_(\d+)_(\d+)-(\d+).qtb', self.qtable_file)[0]
+
         if not self.quiet:
             print()
             print(f"Done: {self.percent_dones:.2f} {self.dones}; Truncated: {self.truncates}")
         if self.dones != 0:
             if self.quiet:
-                print(f'"{epsilon_type}";{train_epsodes};{self.percent_dones:.2f};{self.avg_steps:.6f}')
+                print(f'"{epsilon_type}";{train_episodes};{self.percent_dones:.2f};{self.avg_steps:.6f}')
             else:
                 print(f"Average timesteps per doned episode: {self.avg_steps:.6f}")
         else:
             if self.quiet:
-                print(f'"{epsilon_type}";{train_epsodes};0;0')
+                print(f'"{epsilon_type}";{train_episodes};0;0')
 
 
 
