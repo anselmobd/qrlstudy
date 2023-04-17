@@ -90,8 +90,11 @@ class QQE():
             self.episode += 1
 
         self.percent_dones = self.dones / self.episode * 100
-        self.avg_steps = self.dones_steps / self.dones
-        epsilon_type, train_epsodes = re.findall('qgye1_([^_]+)_\d+_\d+-(\d+).qtb', args.qtable)[0]
+        if self.dones:
+            self.avg_steps = self.dones_steps / self.dones
+        else:
+            self.avg_steps = 0
+        epsilon_type, train_epsodes = re.findall(f'qgye{_VERSION}_([^_]+)_\d+_\d+-(\d+).qtb', args.qtable)[0]
         if not self.quiet:
             print()
             print(f"Done: {self.percent_dones:.2f} {self.dones}; Truncated: {self.truncates}")
