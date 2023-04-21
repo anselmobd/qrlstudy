@@ -44,6 +44,8 @@ class QQE():
         self.state_tries_limit = self.n_possible_states * 100
 
     def setup(self):
+        self.epsilon_type, self.num_episodes, self.qtb_max_steps, self.train_episodes = re.findall(
+            f'qgye{_VERSION}_([^_]+)_(\d+)_(\d+)-(\d+).qtb', self.qtable_file)[0]
         self.qtable = np.loadtxt(self.qtable_file)
         self.env = gym.make(
             id=self.environment,
@@ -60,7 +62,8 @@ class QQE():
         self.episode = 0
         can_find_state = True
         if self.verbose:
-            print("Epsodes - (total_state_tries):")
+            print(f'Epsilon type "{self.epsilon_type}"; max steps {self.qtb_max_steps}; trainned episodes {self.train_episodes}')
+            print("Episodes - (total_state_tries):")
         total_state_tries = 0
         while len(state_set) < self.n_states:
 
@@ -99,8 +102,6 @@ class QQE():
             self.avg_steps = self.dones_steps / self.dones
         else:
             self.avg_steps = 0
-        epsilon_type, num_episodes, max_steps, train_episodes = re.findall(
-            f'qgye{_VERSION}_([^_]+)_(\d+)_(\d+)-(\d+).qtb', self.qtable_file)[0]
 
         if self.verbose:
             print()
@@ -109,10 +110,10 @@ class QQE():
             if self.verbose:
                 print(f"Average timesteps per doned episode: {self.avg_steps:.6f}")
             elif not self.quiet:
-                print(f'"{epsilon_type}";{train_episodes};{self.percent_dones:.2f};{self.avg_steps:.6f}')
+                print(f'"{self.epsilon_type}";{self.qtb_max_steps};{self.train_episodes};{self.percent_dones:.2f};{self.avg_steps:.6f}')
         else:
             if not self.quiet:
-                print(f'"{epsilon_type}";{train_episodes};0;0')
+                print(f'"{self.epsilon_type}";{self.qtb_max_steps};{self.train_episodes};0;0')
 
 
 
@@ -173,3 +174,5 @@ def main():
         states_cover=args.states_cover,
     )
     qqe.eval()
+    if args.quiet:
+        print(qqe.epsilon_type, qqe.qtb_max_steps, qqe.train_episodes, qqe.percent_dones, qqe.avg_steps)
