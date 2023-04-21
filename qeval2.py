@@ -22,12 +22,14 @@ class QQE():
     def __init__(
             self, *,
             quiet,
+            verbose,
             qtable_file,
             states_cover,
             max_steps=None,
             environment=None,
         ):
         self.quiet = quiet
+        self.verbose = verbose
         self.qtable_file = qtable_file
         self.states_cover = states_cover
         self.max_steps = max_steps if max_steps else 100
@@ -57,7 +59,7 @@ class QQE():
         state_set = set()
         self.episode = 0
         can_find_state = True
-        if not self.quiet:
+        if self.verbose:
             print("Epsodes - (total_state_tries):")
         total_state_tries = 0
         while len(state_set) < self.n_states:
@@ -88,7 +90,7 @@ class QQE():
                 self.dones_steps += steps
             else:
                 self.truncates += 1
-            if not self.quiet:
+            if self.verbose:
                 print(f"\r{self.episode+1:6d} - ({total_state_tries:9d})", end='')
             self.episode += 1
 
@@ -100,16 +102,16 @@ class QQE():
         epsilon_type, num_episodes, max_steps, train_episodes = re.findall(
             f'qgye{_VERSION}_([^_]+)_(\d+)_(\d+)-(\d+).qtb', self.qtable_file)[0]
 
-        if not self.quiet:
+        if self.verbose:
             print()
             print(f"Done: {self.percent_dones:.2f} {self.dones}; Truncated: {self.truncates}")
         if self.dones != 0:
-            if self.quiet:
-                print(f'"{epsilon_type}";{train_episodes};{self.percent_dones:.2f};{self.avg_steps:.6f}')
-            else:
+            if self.verbose:
                 print(f"Average timesteps per doned episode: {self.avg_steps:.6f}")
+            elif not self.quiet:
+                print(f'"{epsilon_type}";{train_episodes};{self.percent_dones:.2f};{self.avg_steps:.6f}')
         else:
-            if self.quiet:
+            if not self.quiet:
                 print(f'"{epsilon_type}";{train_episodes};0;0')
 
 
@@ -140,6 +142,11 @@ def parse_args():
         action='store_true',
     )
     parser.add_argument(
+        '-v',
+        '--verbose',
+        action='store_true',
+    )
+    parser.add_argument(
         'qtable',
         help="file with saved Q-table",
     )
@@ -160,6 +167,7 @@ def main():
     args = parse_args()
     qqe = QQE(
         quiet=args.quiet,
+        verbose=args.verbose,
         qtable_file=args.qtable,
         max_steps=args.max_steps,
         states_cover=args.states_cover,
